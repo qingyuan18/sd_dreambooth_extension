@@ -7,7 +7,7 @@ from typing import Any, Dict, Union
 import diffusers
 import torch
 import transformers
-from diffusers.pipelines.pipeline_utils import LOADABLE_CLASSES
+from diffusers.pipeline_utils import LOADABLE_CLASSES
 from einops import rearrange
 from torch import einsum
 
