@@ -36,7 +36,6 @@ from extensions.sd_dreambooth_extension.dreambooth.utils import cleanup, list_fe
 from extensions.sd_dreambooth_extension.lora_diffusion.lora import weight_apply_lora, inject_trainable_lora, \
     save_lora_weight
 
-#import deepspeed
 
 pil_features = list_features()
 mem_record = {}
@@ -71,7 +70,7 @@ def upload_directory_to_s3(local_directory, dest_s3_path):
             s3_client.upload_file(local_path, bucket, s3_path)
             print(f'File {local_path} uploaded to s3://{bucket}/{s3_path}')
         for subdir in dirs:
-            upload_directory_to_s3(local_directory+"/"+subdir,bucket,s3_prefix+"/"+subdir)
+            upload_directory_to_s3(local_directory+"/"+subdir,s3_prefix+"/"+subdir)
 
 def upload_single_file(src_local_path, dest_s3_path):
     """
@@ -89,7 +88,7 @@ def upload_single_file(src_local_path, dest_s3_path):
         return False
     print(f'Uploading file successful. | src: {src_local_path} | dest: {dest_s3_path}')
 
-    
+
 def upload_files(path_local, path_s3):
     """
     上传（重复上传覆盖同名文件）
@@ -97,10 +96,10 @@ def upload_files(path_local, path_s3):
     :param path_s3: s3路径
     """
     print(f'Start upload files.')
- 
+
     if not upload_single_file(path_local, path_s3):
         print(f'Upload files failed.')
- 
+
     print(f'Upload files successful.')
 
 
@@ -128,18 +127,18 @@ def import_model_class_from_model_name_or_path(pretrained_model_name_or_path: st
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     parser.add_argument(
-            "--manul_upload_model_path",
-            type=str,
-            default=None,
-            required=True,
-            help="manually upload model folder files into s3 path.",
+        "--manul_upload_model_path",
+        type=str,
+        default=None,
+        required=True,
+        help="manually upload model folder files into s3 path.",
     )
     parser.add_argument(
-            "--model_name",
-            type=str,
-            default=None,
-            required=True,
-            help="name of trained model.",
+        "--model_name",
+        type=str,
+        default=None,
+        required=True,
+        help="name of trained model.",
     )
     parser.add_argument(
         "--models_path",
@@ -230,16 +229,16 @@ def parse_args(input_args=None):
     )
 
     parser.add_argument(
-                "--save_use_global_counts",
-                default=False,
-                type=bool,
-   )
+        "--save_use_global_counts",
+        default=False,
+        type=bool,
+    )
 
     parser.add_argument(
-            "--save_use_epochs",
-            type=bool,
-            default=False,
-            help="Flag to save epochs.",
+        "--save_use_epochs",
+        type=bool,
+        default=False,
+        help="Flag to save epochs.",
     )
 
     parser.add_argument("--prior_loss_weight", type=float, default=1.0, help="The weight of prior preservation loss.")
@@ -286,11 +285,11 @@ def parse_args(input_args=None):
         help="Total number of training steps to perform.  If provided, overrides num_train_epochs.",
     )
     parser.add_argument(
-            "--epoch",
-            type=int,
-            default=0,
-            help="running number of training steps to perform.",
-        )
+        "--epoch",
+        type=int,
+        default=0,
+        help="running number of training steps to perform.",
+    )
     parser.add_argument("--save_steps", type=int, default=500, help="Save checkpoint every X updates steps.")
     parser.add_argument(
         "--gradient_accumulation_steps",
@@ -445,7 +444,7 @@ def parse_args(input_args=None):
         with open(args.concepts_list, "r") as f:
             args.concepts_list = json.load(f)
 
-    print(args.__dict__)        
+    print(args.__dict__)
     return args
 
 
@@ -594,11 +593,11 @@ def main(args, memory_record, use_subdir, lora_model=None, lora_alpha=1.0, lora_
                     while generated_images < num_new_images:
                         example = sample_dataset.__getitem__(random.randrange(0, s_len))
                         concept_images = concept_pipeline(example["prompt"], num_inference_steps=concept['class_infer_steps'],
-                                                  guidance_scale=concept['class_guidance_scale'],
-                                                  height=args.resolution,
-                                                  width=args.resolution,
-                                                  negative_prompt=concept['class_negative_prompt'],
-                                                  num_images_per_prompt=args.sample_batch_size).images
+                                                          guidance_scale=concept['class_guidance_scale'],
+                                                          height=args.resolution,
+                                                          width=args.resolution,
+                                                          negative_prompt=concept['class_negative_prompt'],
+                                                          num_images_per_prompt=args.sample_batch_size).images
 
                         for i, image in enumerate(concept_images):
                             image_base = hashlib.sha1(image.tobytes()).hexdigest()
@@ -681,8 +680,8 @@ def main(args, memory_record, use_subdir, lora_model=None, lora_alpha=1.0, lora_
     if args.use_lora:
         unet.requires_grad_(False)
         lora_path = os.path.join("/opt/ml/input/data/models",
-            "lora",
-             lora_model if custom_model_name == "" else f"{custom_model_name}.pt")
+                                 "lora",
+                                 lora_model if custom_model_name == "" else f"{custom_model_name}.pt")
         lora_txt = lora_path.replace(".pt", "_txt.pt")
         if os.path.exists(lora_path) and os.path.isfile(lora_path):
             print("Applying lora unet weights before training...")
@@ -724,12 +723,12 @@ def main(args, memory_record, use_subdir, lora_model=None, lora_alpha=1.0, lora_
         args.learning_rate = args.lora_learning_rate
 
         params_to_optimize = ([
-                {"params": itertools.chain(*unet_lora_params), "lr": args.lora_learning_rate},
-                {"params": itertools.chain(*text_encoder_lora_params), "lr": args.lora_txt_learning_rate},
-            ]
-            if args.train_text_encoder
-            else itertools.chain(*unet_lora_params)
-        )
+                                  {"params": itertools.chain(*unet_lora_params), "lr": args.lora_learning_rate},
+                                  {"params": itertools.chain(*text_encoder_lora_params), "lr": args.lora_txt_learning_rate},
+                              ]
+                              if args.train_text_encoder
+                              else itertools.chain(*unet_lora_params)
+                              )
     else:
         params_to_optimize = (
             itertools.chain(unet.parameters(), text_encoder.parameters()) if args.train_text_encoder
@@ -991,15 +990,6 @@ def main(args, memory_record, use_subdir, lora_model=None, lora_alpha=1.0, lora_
 
             s_pipeline = s_pipeline.to(accelerator.device)
 
-            ### add deepspeed accelerate ################
-            #deepspeed.init_inference(
-            #    model=getattr(ds_pipeline,"model", ds_pipeline),      # Transformers models
-            #    mp_size=1,        # Number of GPU
-            #    dtype=torch.float16, # dtype of the weights (fp16)
-            #    replace_method="auto", # Lets DS autmatically identify the layer to replace
-            #    replace_with_kernel_inject=False, # replace the model with the kernel injector
-            #)
-
             with accelerator.autocast(), torch.inference_mode():
                 if save_model:
                     try:
@@ -1027,7 +1017,7 @@ def main(args, memory_record, use_subdir, lora_model=None, lora_alpha=1.0, lora_
                         else:
                             out_file = None
                             s_pipeline.save_pretrained(args.models_path)
-                            
+
                             ###  manually upload trained db model dirs to s3 path#####
                             #### to eliminate sagemaker tar process#####
                             print(f"manul_upload_model_path is {args.manul_upload_model_path}")

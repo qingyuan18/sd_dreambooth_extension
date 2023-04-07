@@ -70,7 +70,7 @@ def upload_directory_to_s3(local_directory, dest_s3_path):
             s3_client.upload_file(local_path, bucket, s3_path)
             print(f'File {local_path} uploaded to s3://{bucket}/{s3_path}')
         for subdir in dirs:
-            upload_directory_to_s3(local_directory+"/"+subdir,bucket,s3_prefix+"/"+subdir)
+            upload_directory_to_s3(local_directory+"/"+subdir,s3_prefix+"/"+subdir)
 
 def upload_single_file(src_local_path, dest_s3_path):
     """
